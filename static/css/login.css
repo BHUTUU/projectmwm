@@ -1,0 +1,341 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,body{
+  height: 100%;
+  width: 100%;
+  font-family: sans-serif;
+}
+.head-top{
+  background-color: #04172E;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10vw;
+  color: white;
+  height: 6vh;
+  position: relative;
+}
+.top-left{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2vw;
+}
+.top-left>i{
+  font-size: 1vw;
+}
+.top-right{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2vw;
+  font-weight: 400;
+}
+.menu-icon{
+  font-size: 30px;
+  display: none;
+}
+nav{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 5vw;
+  background-color: #FFFFFF;
+  border: 0.5px solid gainsboro;
+  padding: 10px 9vw;
+  height: 10vh;
+  position: relative;
+}
+nav>img{
+  height: 4vw;
+}
+.nav-conter ul{
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5vw;
+  height: 6vh;
+
+  /* background-color: red; */
+}
+.nav-conter ul li a{
+  text-decoration: none;
+  font-size: 1.3vw;
+  font-weight: 550;
+  color: black;
+}
+.form-conter{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background-color: red; */
+  /* height: 80vh; */
+  /* width: 80vw; */
+  position: relative;
+}
+.form-center{
+  background-color: #F0F0F0;
+  /* height: 100vh; */
+  width: 80%;
+  padding: 2vw;
+}
+form{
+  background-color: #FFFFFF;
+  /* height: 70vh; */
+  padding: 2px 20px;
+}
+.form-btn{
+  /* height: 60px; */
+  /* background-color: purple; */
+  /* text-align: center; */
+  padding: 2vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5vw;
+
+}
+.form-btn>a{
+  text-decoration: none;
+  border: 0.5px solid blue;
+  padding: 10px 25px;
+  border-radius: 10px;
+  color: black;
+}
+.form-details{
+  display: flex;
+  flex-direction: column;
+  gap: 1vw;
+}
+.form-details>label{
+  font-weight: 550;
+  font-size: 1.1vw;
+  margin-left: 0.5vw;
+}
+.form-details>input, select, div>input{
+  /* border: 1px solid black; */
+  padding: 10px 10px;
+  background-color: #ECEFF1;
+  font-size: 1.2vw;
+  outline: none;
+  border: none;
+}
+.emailsection {
+  display: flex;
+  flex-direction: column;
+}
+#verifyemailbutton{
+  padding: 10px 15px;
+  font-size: 1.1vw;
+  margin-bottom: 2vw;
+  justify-self: end;
+}
+#submitbutton{
+  margin-top: 2vw;
+  margin-left: 50%;
+  padding: 10px 15px;
+  font-size: 1.1vw;
+  margin-bottom: 2vw;
+}
+footer{
+  display: flex;
+  /* align-items: center; */
+  justify-content: space-between;
+  height: 45vh;
+  /* background-color: rebeccapurple; */
+  padding: 2vw 5vw;
+  background-color: #002C42;
+  color: white;
+}
+.footer-elem{
+  margin-top: 2vh;
+}
+.footer-elem>img{
+  height: 6vw;
+}
+.footer-elem>h1{
+  border-bottom: 3px solid green;
+  margin-bottom: 2vw;
+  padding-bottom: 0.5vw;
+  font-size: 1.3vw;
+}
+.footer-elem>ul>li{
+  list-style: none;
+}
+.footer-elem>ul>li>a{
+  text-decoration: none;
+  margin-top: 2vw;
+  color: white;
+  display: flex;
+  /* flex-direction: column; */
+  gap: 1vw;
+}
+/* bank.html css start here */
+.btn{
+  margin-left: 1vw;
+}
+#backbtn{
+  margin-left: 44%;
+}
+
+
+/* Responcive */
+
+@media (max-width:600px) {
+  *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* overflow: hidden; */
+    /* overflow: scroll; */
+  }
+  .head-top{
+    height: 2vw;
+    display: flex;
+    justify-content: space-between;
+  }
+  .top-left{
+    font-size: 2vw;
+  }
+  .top-left>h5{
+    letter-spacing:normal;
+  }
+  .top-left>i{
+    font-size: 1vw;
+  }
+  .top-right{
+    font-size: 2vw;
+  }
+  nav{
+    height: 6vh;
+    display: flex;
+    /* align-items: center; */
+    justify-content: space-between;
+    padding: 4px 5px;
+    font-size: 2vw;
+    /* gap: 2px; */
+
+  }
+  nav>img{
+    height: 6vw;
+    /* padding-left: 2px; */
+  }
+  .nav-conter{
+    display: flex;
+    gap: 2px;
+    /* align-items: center; */
+    /* justify-content: center; */
+  }
+  #menuList>li{
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    justify-content: center;
+  }
+  #menuList>li>a{
+    font-size: 1.8vw;
+    margin-right: -8px;
+  }
+  .loginform{
+    height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* padding: 5px 4vh; */
+  }
+  .formholder{
+    height: 50vh;
+    /* border: 1px solid #002C42; */
+    padding: 5px 10px;
+    border-radius: 25px;
+    /* margin-bottom: 5vh; */
+  }
+  .formholder>form{
+    width: 100%;
+    font-size: 4vw;
+    outline: none;
+    border: none;
+    position: relative;
+  }
+  .formholder>form>input{
+    padding: 10px;
+    margin-top: 3vh;
+    width: 100%;
+    height: 7vh;
+    font-size: 4vw;
+  }
+  .formholder>form>button{
+    width: 50vw;
+    margin-left: 5vh;
+    font-size: 4vw;
+    background-color: #54BE73;
+    color: white;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    margin-top: 5vw;
+  }
+  footer{
+    height: 80vh;
+    display: flex;
+    justify-content: space-between;
+    padding: 3vh;
+    flex-direction: column;
+  }
+  .footer-elem>img{
+    height: 10vh;
+  }
+  .footer-elem>h1{
+    /* background-color: red; */
+    font-size: 4vh;
+  }
+  .form-btn{
+    display: flex;
+    /* flex-direction: column; */
+    align-items: center;
+    font-size: 2vh;
+  }
+  .form-btn>a{
+    border-radius: 5px;
+    padding: 3px 2px;
+    font-size:1.4vh;
+    border-bottom: 1px solid #002C42;
+  }
+  .form-details>label{
+    font-size: 1.4vh;
+  }
+  .form-details>input{
+    width: 100%;
+    font-size: 1.4vh;
+    padding: 5px;
+  }
+  form>button{
+    font-size: 1.4vh;
+    margin-top: 2vh;
+    margin-left: 40%;
+  }
+  form>h5{
+    font-size: 1.4vh;
+    margin-top: 2vh;
+    margin-left: 30%;
+    padding: 1vh 2vh;
+    text-align: center;
+    width: 40%;
+    background-color: #54BE73;
+    color: white;
+    border-radius: 15px;
+  }
+  #backbtn{
+    margin-left: 4vh;
+    margin-right: 2vw;
+  }
+  .okBtn{
+    font-size: 2vh;
+    padding: 1vh 4vh;
+  }
+
+}

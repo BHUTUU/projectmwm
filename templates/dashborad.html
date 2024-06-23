@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | MoneyWealthMangment.pvt.in</title>
+  <link rel="stylesheet" href="dashborad.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+  <div class="main">
+    <div class="main-left">
+      <div class="slidbar">
+        <i class="fa-solid fa-house active" onclick="window.location.href = 'dashborad.html'"></i>
+        <i class="fa-solid fa-user" onclick="window.location.href ='Profile.html'"></i>
+        <i class="fa-solid fa-dollar-sign"></i>
+        <i class="fa-solid fa-envelope"></i>
+        <i class="fa-solid fa-bolt"></i>
+        <i class="fa-solid fa-right-from-bracket" onclick="window.location.href = 'login.html'"></i>
+      </div>
+    </div>
+    <div class="main-right">
+      <nav>
+        <div class="nav-left"
+          style="display: flex; align-items: center; gap: 5px; border-bottom: 0.5px solid #54BE73; padding: 5px 10px; border-radius: 10px;">
+          <i class="fa-solid fa-users" style="font-size: 2vw;"></i>
+          <div class="elem">
+            <h1> User Dashboard</h1>
+            <p>Payment updates</p>
+          </div>
+        </div>
+        <div class="nav-right">
+          <div class="nav-right-elem">
+            <p id="user_name">Khushdil Kumar</p>
+            <button type="button" onclick="window.location.href = 'login.html'">Log-out</button>
+          </div>
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s"
+            alt="">
+        </div>
+      </nav>
+      <div class="user-details" id="conter">
+        <div class="user-amt" style="background-color: #54BE73;">
+          <label for="">Your Amount Value</label>
+          <i class="fa-solid fa-indian-rupee-sign"> 50,000</i>
+        </div>
+        <div class="user-amt">
+          <label for="">Your Interest Value <span>(Monthly)</span></label>
+          <i class="fa-solid fa-indian-rupee-sign"> 5000m</i>
+        </div>
+        <div class="user-amt">
+          <label for="">Your Withdraw Amount <span>(Weakly)</span></label>
+          <i class="fa-solid fa-indian-rupee-sign"> 2500w</i>
+        </div>
+        <div class="user-amt" style="background-color: #54BE73;">
+          <label for="">Pending Amount</label>
+          <i class="fa-solid fa-indian-rupee-sign"> 2000</i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="main.js"></script>
+</body>
+
+</html>
