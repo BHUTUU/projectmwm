@@ -924,12 +924,13 @@
   <!-- Bootstrap core JavaScript
     ================================================== -->
   <!-- Placed at the end of the document so the pages load faster -->
-  <script src="main.js"></script>
+  <script src="{{url_for('static', filename='js/main.js')}}"></script>
   <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-  <script src="bootstrap.min.js"></script>
-  <script src="custom.js"></script>
+  <script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+  <script src="{{url_for('static', filename='js/custom.js')}}"></script>
+  <script src="{{url_for('static', filename='js/script.js')}}"></script>
   <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
   <script src="{{url_for('static', filename='js/nivo.slider.js')}}"></script>
   <script type="text/javascript">
