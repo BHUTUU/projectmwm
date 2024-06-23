@@ -1,0 +1,27 @@
+{
+    "Project-MWM": [
+        {
+            "program": "Project-MWM",
+            "version": "0.0.1",
+            "edition": 2024,
+            "author": "Binod",
+            "company": "Gram Panchayat Fulera"
+        }
+    ],
+    "mysql": [
+        {
+            "host": "localhost",
+            "user": "root",
+            "password": "root",
+            "database_name": "projectmwm"
+        }
+    ],
+    "Email": [
+        {
+            "host": "smtp.gmail.com",
+            "port": 587,
+            "sender_email": "bhutuuchatapplication@gmail.com",
+            "sender_password": "yqbh pwcd lyug ncea"
+        }
+    ]
+}

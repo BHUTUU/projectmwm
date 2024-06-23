@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login page</title>
+  <link rel="stylesheet" href="{{url_for('static', filename='css/login.css')}}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+
+<body>
+  <div class="head-top">
+    <div class="top-left"><i class="fa-solid fa-envelope" style="font-size: 1vw;"></i>
+      <h5 style="font-weight: 400;  letter-spacing: 2px;">dil76676484@gmail.com</h5>
+    </div>
+    <div class="top-right"><i class="fa-solid fa-mobile" style="font-size: 1vw;"></i>
+      <h5 style="font-weight: 400;">+91 -7667648479</h5>
+    </div>
+  </div>
+  <nav>
+    <img src="{{url_for('static', filename='images/logo.png')}}" alt="">
+    <div class="nav-conter">
+      <ul id="menuList">
+        <li><a href="home.html">Home</a></li>
+        <li><a href="home.html">About</a></li>
+        <li><a href="home.html">Services</a></li>
+        <li><a href="home.html">Get in Touch</a></li>
+        <li><a href="/getloginpage" style="background-color: blue; color: white;">Login</a></li>
+        <li><a href="/registerpage">Create Account</a></li>
+
+      </ul>
+      <div class="menu-icon">
+        <i class="fa-solid fa-bars" onclick="toggleMenu()"></i>
+      </div>
+    </div>
+  </nav>
+  <div class="form-conter" style="width: 100%; background-color: #95A5A6;" id="respons-form">
+    <div class="form-center" style=" height: 85vh; background-color: #95A5A6; display: flex; justify-content: center;">
+      <form action="" style="width: 40%;height: 55vh; margin-top: 5vw;">
+        <div class="form-details" style="padding: 3vw;">
+          <input type="email" name="email" id="email" placeholder="Email-ID" required
+            style="border-radius: 5px; width: 100%; height: 7vh; font-size: 1vw; padding: 10px;">
+          <input type="password" name="password" id="password" placeholder="Password" required
+            style="border-radius: 5px; width: 100%; height: 7vh; font-size: 1vw; padding: 10px;">
+          <button type="submit"
+            style="background-color: #54BE73; border: none; border-radius: 10px; color: white; cursor: pointer;"
+            onclick="window.location.href = 'dashborad.html'">Login</button>
+          <p style="font-weight: 400; opacity: 0.7;">Not Registered? <a href="/registerpage"
+              style="text-decoration: none; color: blue;">Create an
+              account</a>
+          </p>
+          <a href="" style="text-align: center;">Forgot Password?</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="user-elem">
+    <div class="formholder">
+      <form action="">
+        <input type="email" placeholder="Enter your Email-ID">
+        <input type="password" placeholder="Enter your Password">
+        <h5 onclick="window.location.href='dashborad.html'">Login</h5>
+        <p style="font-weight: 400; opacity: 0.7; margin-top: 5vw; margin-bottom: 2vw; font-size: 4.6vw;">Not
+          Registered?
+          <a href="/registerpage" style="text-decoration: none; color: blue;">Create an
+            account</a>
+        </p>
+        <a href="" style="text-align: center; font-size: 4.6vw;">Forgot Password?</a>
+      </form>
+    </div>
+  </div>
+  <footer>
+    <div class=" footer-elem"><img src="{{url_for('static', filename='images/logo.png')}}" alt="">
+    </div>
+    <div class="footer-elem">
+      <h1>QUICK LINKS</h1>
+      <ul>
+        <li><a href=""><i class="fa-solid fa-check"></i>About</a></li>
+        <li><a href=""><i class="fa-solid fa-check"></i>Services</a></li>
+        <li><a href=""><i class="fa-solid fa-check"></i>Pricing</a></li>
+        <li><a href=""><i class="fa-solid fa-check"></i>Testimonials</a></li>
+      </ul>
+    </div>
+    <div class="footer-elem">
+      <h1>POLICIES</h1>
+      <ul>
+        <li><a href=""><i class="fa-solid fa-check"></i>Privacy Policy</a></li>
+        <li><a href=""><i class="fa-solid fa-check"></i>Refund & Cancellation Policy</a></li>
+        <li><a href=""><i class="fa-solid fa-check"></i>Disclaimer</a></li>
+      </ul>
+    </div>
+    <div class="footer-elem">
+      <h1>GET IN TOUCH</h1>
+    </div>
+  </footer>
+
+  <script src="{{url_for('static', filename='js/main.js')}}"></script>
+  <script>
+    let smScreen = document.querySelector('.user-elem');
+    let bgScreen = document.querySelector('#respons-form');
+
+    function handleResize() {
+      const windowWidth = window.innerWidth;
+      if (windowWidth > 600) {
+        smScreen.style.display = 'none';
+        bgScreen.style.display = '';
+      }
+      else if (windowWidth => 600) {
+        smScreen.style.display = ''
+        bgScreen.style.display = 'none';
+      }
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+  </script>
+</body>
+
+</html>
