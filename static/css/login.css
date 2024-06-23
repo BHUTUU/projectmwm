@@ -243,6 +243,90 @@ footer{
 }
 
 
+
+/* email verify & email pop code start here */
+.container {
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1vw;
+  margin-bottom: -2%;
+  margin-top: -3px;
+}
+.container>label{
+  font-weight: 550;
+}
+#container_email_button{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#container_email_button>input{
+  width: 90%;
+}
+#container_email_button>button{
+  padding: 10px 18px;
+  font-size: 1.2vw;
+  background-color: #54BE73;
+  outline: none;
+  border: none;
+  border-radius: 5px;
+  color: white;
+}
+
+.popup {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ECEFF1;
+  padding: 20px;
+  /* width: 25%;
+  height: 40%; */
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.popup-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5vw;
+}
+
+.popup-content label,
+.popup-content input {
+  /* margin: 10px 0; */
+  padding: 8px 16px;
+  outline: none;
+  border: none;
+  border-radius: 10px;
+  font-weight: 550;
+}
+.popup-content button{
+  width: 50%;
+  margin-top: 1vw;
+  margin-left: 25%;
+  background-color: #54BE73;
+  color: white;
+  opacity: 0.8;
+  cursor: pointer;
+  padding: 9px 15px;
+  outline: none;
+  border: none;
+  border-radius: 8px;
+}
+.popup-content button:hover{
+  opacity: 1;
+}
+.status {
+  margin: 20px;
+  font-weight: bold;
+}
+/* email_verify & pop code end here */
+
+
 /* Responcive */
 
 @media (max-width:600px) {

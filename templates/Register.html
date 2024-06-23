@@ -50,7 +50,7 @@
           <input type="file" required id="userPhoto">
           <label for="">Client Name(as per PAN card) : *</label>
           <input type="text" required id="fullname">
-          <label for="">Email-ID : *</label>
+          <!-- <label for="">Email-ID : *</label>
           <div class="emailSection">
             <input type="email" required id="email">
             <button id="verifyemailbutton">Verify</button>
@@ -59,7 +59,24 @@
             <input type="number" placeholder="Enter OTP" id="otpinput">
             <button id="sendotpverifybutton">Verify</button>
             <button id="resendotpbutton">Resend OTP</button>
+          </div> -->
+          <div class="container">
+            <label for="email">Email : </label>
+            <div id="container_email_button">
+              <input type="email" id="email" required>
+              <button id="verifyEmailBtn">Verify</button>
+            </div>
           </div>
+
+          <div id="otpPopup" class="popup">
+            <div class="popup-content">
+              <label for="otp">Enter OTP : </label>
+              <input type="text" id="otp" style="background-color: white;" required>
+              <button id="verifyOtpBtn">Verify</button>
+              <button id="resendOtpBtn">Resend OTP</button>
+            </div>
+          </div>
+          <div id="verificationStatus" class="status" style="color: #54BE73;"></div>
           <label for="">Password : *</label>
           <input type="password" id="password">
           <label for="">Date of Birth : *</label>
@@ -105,7 +122,26 @@
       <h1>GET IN TOUCH</h1>
     </div>
   </footer>
+  <script>
+    document.getElementById('verifyEmailBtn').addEventListener('click', function () {
+      document.getElementById('otpPopup').style.display = 'block';
+    });
+
+    document.getElementById('verifyOtpBtn').addEventListener('click', function () {
+      // Here you would normally verify the OTP, but for this example, we'll assume it's correct
+      let email = document.getElementById('email').value;
+      document.getElementById('otpPopup').style.display = 'none';
+      document.getElementById('verificationStatus').textContent = 'Email ' + email + ' is verified';
+    });
+
+    document.getElementById('resendOtpBtn').addEventListener('click', function () {
+      // Here you would normally resend the OTP
+      alert('OTP has been resent.');
+    });
+
+  </script>
   <script src="{{url_for('static', filename='js/main.js') }}"></script>
+
 </body>
 
 </html>
