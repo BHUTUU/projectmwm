@@ -240,5 +240,6 @@ def getloginpage():
     return render_template('login.html')
 
 print(f"Running server on: http://127.0.0.1:8080")
+print("OK")
 # serve(app=app, host='127.0.0.1', port=5000)
 app.run(port=8080)
