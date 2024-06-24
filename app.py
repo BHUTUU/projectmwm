@@ -106,7 +106,7 @@ def scheduleClearOTPofEmail(email, timelasp):
 def sendOTP():
     global pidsForOtpCleanerService
     try:
-        receiverEmail = request.args.get('email')
+        receiverEmail = request.form.get('email')
         # print(receiverEmail)
         if receiverEmail.find('"'):
             receiverEmail = receiverEmail.replace('"', '')
@@ -142,8 +142,8 @@ def sendOTP():
 @app.route('/verifyOTP', methods=['GET','POST'])
 def verify_otp():
     try:
-        receiverEmail = request.args.get('email')
-        otp = request.args.get('otp')
+        receiverEmail = request.form.get('email')
+        otp = request.form.get('otp')
         encryptedOTP = sha512(str(otp).encode('utf-8')).hexdigest()
         db.connect()
         emailsInOTPEmailTable = db.get_value(emailOTPtable, 'email')[0]
@@ -159,9 +159,9 @@ def verify_otp():
                     return jsonify({"status": "success"}), 201
                 else:
                     db.disconnect()
-                    return jsonify({"status": "failure1"}), 500
+                    return jsonify({"status": "failure"}), 500
         db.disconnect()
-        return jsonify({"status": "failure2"}), 500
+        return jsonify({"status": "failure"}), 500
     except Exception:
         return jsonify({"status": "error"}), 500
 
