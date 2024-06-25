@@ -13,15 +13,115 @@ function updateScreenSize() {
     emailDiv.style.width = (newWidth > minWidth ? newWidth : minWidth) + 'px';
 }
 updateScreenSize();
+document.getElementById('submitbutton').disabled = true;
 window.addEventListener('resize', updateScreenSize);
 localStorage.setItem('emailVerified', false);
-document.getElementById('verifyemailbutton').addEventListener('click', function(event) {
- event.preventDefault();
- let emailverifysection = document.getElementById('emailverifysection');
+sessionStorage.setItem('verificlick', true);
+document.getElementById('verifyOtpBtn').addEventListener('submit', function(event) {
+    event.preventDefault();
+});
+document.getElementById('resendOtpBtn').addEventListener('submit', function(event) {
+    event.preventDefault();
+});
+document.getElementById('verifyEmailBtn').addEventListener('submit', function(event) {
+    event.preventDefault();
+});
+document.getElementById('verifyEmailBtn').addEventListener('click', function () {
+  emailValue = document.getElementById('email').value;
+  if(sessionStorage.getItem('verificlick').toString() == "true") {
+    sessionStorage.setItem('verificlick', false);
+    document.getElementById('verifyEmailBtn').innerText = "Edit";
+    formData = new FormData();
+    formData.append('email', emailValue);
+    if(emailValue != '' && emailValue != null) {
+        fetch('/sendOTP', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert('OTP sent successfully')
+            } else {
+                alert("Failed to send OTP");
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            alert("An error occurred while sending OTP");
+        });
+        document.getElementById('otpPopup').style.display = 'block';
+    } else {
+      sessionStorage.setItem('verificlick', true);
+      document.getElementById('verifyEmailBtn').innerText = 'Verify'
+      alert('Please enter a valid email address');
+    }
+  } else {
+    sessionStorage.setItem('verificlick', true);
+    document.getElementById('otpPopup').style.display = 'none';
+    document.getElementById('verifyEmailBtn').innerText = 'Verify'
+  }
+});
+
+document.getElementById('verifyOtpBtn').addEventListener('click', function () {
+    emailValue = document.getElementById('email').value;
+    enteredOTP = document.getElementById('otp').value;
+    if (enteredOTP == '' || enteredOTP == null) {
+        alert('Please enter a valid OTP');
+        return;
+    }
+    formData = new FormData();
+    formData.append('email', emailValue);
+    formData.append('otp', enteredOTP);
+    fetch('/verifyOTP', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert('OTP match successfull')
+            document.getElementById('otpPopup').style.display = 'none';
+            document.getElementById('verificationStatus').textContent = 'Email ' + emailValue + ' is verified';
+            document.getElementById('verifyEmailBtn').innerText = 'verified!';
+            document.getElementById('verifyEmailBtn').disabled = true;
+            document.getElementById('email').disabled = true;
+            document.getElementById('submitbutton').disabled = false;
+        } else {
+            alert("OTP match failed");
+            return;
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert("Something went wrong");
+        return;
+    });
+});
+
+document.getElementById('resendOtpBtn').addEventListener('click', function () {
+    emailValue = document.getElementById('email').value;
+    formData = new FormData();
+    formData.append('email', emailValue);
+    fetch('/sendOTP', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert('OTP has been resent.');
+        } else {
+            alert("Failed to send OTP");
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert("An error occurred while sending OTP");
+    });
 });
 document.getElementById('registrationform').addEventListener('submit', function(event) {
-  event.preventDefault(); // Prevent the default form submission behavior
-
+  event.preventDefault();
   try {
       var userPhoto = document.getElementById('userPhoto');
       var userFullName = document.getElementById('fullname').value;

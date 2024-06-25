@@ -1143,13 +1143,13 @@ table.dataTable, table.dataTable th, table.dataTable td {
     
 .table {
     color: strong;
-    color-color: #6e6e6e;
+    background-color: #6e6e6e;
 }
 .table > thead {
     vertical-align: bottom;
 }
-.active-projects thead tr {
-}
+/* .active-projects thead tr {
+} */
 thead, tbody, tfoot, tr, td, th {
     border-color: inherit;
     border-style: solid;
