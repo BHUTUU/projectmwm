@@ -120,7 +120,7 @@ document.getElementById('resendOtpBtn').addEventListener('click', function () {
         alert("An error occurred while sending OTP");
     });
 });
-document.getElementById('registrationform').addEventListener('submit', function(event) {
+document.getElementById('submitbutton').addEventListener('click', function(event) {
   event.preventDefault();
   try {
       var userPhoto = document.getElementById('userPhoto');
@@ -159,9 +159,23 @@ document.getElementById('registrationform').addEventListener('submit', function(
       .then(response => response.json())
       .then(data => {
           if (data.status === "success") {
-            alert(data.id)
+            alert(data.id, data.session_token)                               //to be removed after completion of the the website
             localStorage.setItem('idofgegestration', data.id);
-            window.location.href = '/bankDetails'
+            sessionStorage.setItem('sessionToken', data.session_token);
+            // window.location.href = '/bankDetails'
+            const bankAuthForm = new FormData();
+            bankAuthForm.append('session_token', data.session_token);
+            if(data.id != "" && data.id != null && data.id != undefined) {
+                fetch('/bankDetails?session_token='+data.session_token, {
+                    method: 'GET'
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Do something with the HTML response, for example:
+                    document.body.innerHTML = html;
+                })
+                .catch(error => console.error('Error:', error));
+            }
           } else {
               console.error('Server responded with an error:', data);
               alert("Failed to submit data: " + data.message);
@@ -175,4 +189,33 @@ document.getElementById('registrationform').addEventListener('submit', function(
       console.error('Client-side error:', error);
       alert("An error occurred on the client side.");
   }
+});
+
+// Login handler
+document.getElementById('loginbutton').addEventListener('click', function(event) {
+    event.preventDefault();
+    alert("testing")
+    var email = document.getElementById('emailvalue').value;
+    var password = document.getElementById('passwordvalue').value;
+    console.log(email, password);
+    var formData = new FormData();
+    formData.append('email', email);
+    formData.append('password',  password);
+    fetch('/login', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            localStorage.setItem('idofregestration', data.id);
+            window.location.href = '/bankDetails';
+        } else {
+            console.error('Server responded with an error:', data);
+            alert("Failed to login: " + data.message);
+        }
+    }).catch(error => {
+        console.error('Fetch error:', error);
+        alert("An error occurred while logging in.");
+    });
 });

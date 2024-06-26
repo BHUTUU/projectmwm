@@ -6,7 +6,7 @@ from modules.DatabaseManager import DatabaseManager
 from modules.EmailManager import EmailManager
 from threading import Thread as dusraDimaag
 from hashlib import sha512
-import time
+import time, uuid
 #<<<-----DatabaseConfiguration---------->>>
 with open("config.json", 'r') as config_file:
     jsonContent = json.load(config_file)
@@ -51,6 +51,13 @@ columnsInEmailOTPtable = [
     'email VARCHAR(255)',
     'otp VARCHAR(255)',
 ]
+sessionDataTable = 'session_data_table'
+columnsInSessionDataTable = [
+    'id INT AUTO_INCREMENT PRIMARY KEY',
+    'idinregtable INT',
+    'email VARCHAR(255)',
+    'token VARCHAR(255)'
+]
 # Create the table if it doesn't exist
 db.connect()
 if not db.check_table_exists(registration_table):
@@ -70,6 +77,12 @@ if not db.check_table_exists(emailOTPtable):
     print(f"Table '{emailOTPtable}' created successfully.")
 else:
     print(f"Table '{emailOTPtable}' already exists.")
+
+if not db.check_table_exists(sessionDataTable):
+    db.create_table(sessionDataTable, columnsInSessionDataTable)
+    print(f"Table '{sessionDataTable}' created successfully.")
+else:
+    print(f"Table '{sessionDataTable}' already exists.")
 db.disconnect()
 #<<<-----APP-------->>>
 app = Flask(__name__)
@@ -86,7 +99,22 @@ def registerPage():
 
 @app.route('/bankDetails', methods=['GET'])
 def bankDetails():
-    return render_template('bank.html')
+    try:
+        sessionToken = request.args.get('session_token')
+        print("get sessinfo from client: " + sessionToken)
+    except Exception:
+        return jsonify({"status": "failure", "message": "Invalid Session request of session Expired!."}), 500
+    db.connect()
+    try:
+        sessionData = db.get_value_row('session_data_table', 'token', sessionToken)[0][3]
+        print("\n\n\n\n ", sessionData)
+    except Exception:
+        sessionData = None
+    db.disconnect()
+    if sessionData is not None:
+        return render_template('bank.html')
+    else:
+        return jsonify({"status": "failure", "message": "Invalid Session request of session Expired!."}), 500
 
 @app.route('/finishPage', methods=['GET'])
 def finishPage():
@@ -193,11 +221,34 @@ def submitregistereddata():
             aadharimage_data, panimage_data
         )
         db.connect()
+        try:
+            predata = db.get_value_row(registration_table, 'email', email)[0]
+            idOfRegistration = db.get_value_row(registration_table, 'email', email)
+        except Exception:
+            predata = None
+        if predata is not None:
+            db.disconnect()
+            return jsonify({"status": "failure", "message": "User already Registered!"}), 500
         if db.add_data(registration_table, column_names, values):
             idOfRegistration = db.get_value_row(registration_table, 'aadharnumber', aadharnumber)[0]
             db.disconnect()
             print(idOfRegistration[0])
-            return jsonify({"status": "success", "id": f"{idOfRegistration[0]}", "message": "Data inserted successfully."}), 201
+            sessionToken = str(uuid.uuid4().hex)
+            session_column = [
+                'idinregtable', 'email', 'token'
+            ]
+            session_values = (
+                idOfRegistration[0], email, sessionToken
+            )
+            db.connect()
+            if db.add_data(sessionDataTable, session_column, session_values):
+                print("\n\n\n\nSession token added")
+                db.disconnect()
+                return jsonify({"status": "success", "id": f"{idOfRegistration[0]}", "session_token": f"{sessionToken}", "message": "Data inserted successfully."}), 201
+            else:
+                print("\n\n\nSession token add error")
+                db.disconnect()
+                return jsonify({"status": "ServerError", "message": "Registration successfull but session expired!"}), 500
         else:
             db.disconnect()
             return jsonify({"status": "failure", "message": "Failed to insert data."}), 500
@@ -206,7 +257,7 @@ def submitregistereddata():
 
 
 @app.route('/submitbankdetails', methods=['POST'])
-def submitbankdata():
+def submitbankdata(): # in this also i have to authenticate using session token later.
     try:
         registrationId = request.form.get('registrationId')
         payout = request.form.get('payout')
@@ -233,12 +284,33 @@ def submitbankdata():
     except Exception as e:
         print("Exception raised")
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
 @app.route('/getloginpage', methods=['GET'])
 def getloginpage():
     return render_template('login.html')
 
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        email = request.form.get('email')
+        password = request.form.get('password')
+        db.connect()
+        if db.get_value_row(registration_table, 'email', email)[0][3] == sha512(str(password).encode('utf-8')).hexdigest():
+            idOfRegistration = db.get_value_row(registration_table, 'email', email)[0]
+            sessionToken = str(uuid.uuid4().hex)
+            session_column = [
+                'idinregtable', 'email', 'token'
+            ]
+            session_values = (
+                idOfRegistration[0], email, sessionToken
+            )
+            if db.add_data(sessionDataTable, session_column, session_values):
+                db.disconnect()
+                return jsonify({"status": "success", "id": f"{idOfRegistration[0]}", "session_token": f"{sessionToken}"}), 201
+        else:
+            db.disconnect()
+            return jsonify({"status": "failure"}), 500
+    except Exception:
+        return jsonify({"status": "error"}), 500
 print(f"Running server on: http://127.0.0.1:8080")
 print("OK")
 # serve(app=app, host='127.0.0.1', port=5000)
