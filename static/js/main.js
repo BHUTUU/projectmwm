@@ -171,7 +171,6 @@ document.getElementById('submitbutton').addEventListener('click', function(event
                 })
                 .then(response => response.text())
                 .then(html => {
-                    // Do something with the HTML response, for example:
                     document.body.innerHTML = html;
                 })
                 .catch(error => console.error('Error:', error));
@@ -192,30 +191,30 @@ document.getElementById('submitbutton').addEventListener('click', function(event
 });
 
 // Login handler
-document.getElementById('loginbutton').addEventListener('click', function(event) {
-    event.preventDefault();
-    alert("testing")
-    var email = document.getElementById('emailvalue').value;
-    var password = document.getElementById('passwordvalue').value;
-    console.log(email, password);
-    var formData = new FormData();
-    formData.append('email', email);
-    formData.append('password',  password);
-    fetch('/login', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "success") {
-            localStorage.setItem('idofregestration', data.id);
-            window.location.href = '/bankDetails';
-        } else {
-            console.error('Server responded with an error:', data);
-            alert("Failed to login: " + data.message);
-        }
-    }).catch(error => {
-        console.error('Fetch error:', error);
-        alert("An error occurred while logging in.");
-    });
-});
+// document.getElementById('loginbutton').addEventListener('click', function(event) {
+//     // event.preventDefault();
+//     alert("testing")
+//     var email = document.getElementById('emailvalue').value;
+//     var password = document.getElementById('passwordvalue').value;
+//     console.log(email, password);
+//     var formData = new FormData();
+//     formData.append('email', email);
+//     formData.append('password',  password);
+//     fetch('/login', {
+//         method: 'POST',
+//         body: formData
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.status === "success") {
+//             localStorage.setItem('idofregestration', data.id);
+//             window.location.href = '/bankDetails';
+//         } else {
+//             console.error('Server responded with an error:', data);
+//             alert("Failed to login: " + data.message);
+//         }
+//     }).catch(error => {
+//         console.error('Fetch error:', error);
+//         alert("An error occurred while logging in.");
+//     });
+// });

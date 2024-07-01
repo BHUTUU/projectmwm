@@ -1,0 +1,2 @@
+* Run a loading process until all the images are fetched and set into the body of profie.
+* Have to work on dashboard: create a seperate table for keeping all the updates in the users account.
