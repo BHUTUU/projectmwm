@@ -8,6 +8,7 @@ from threading import Thread as dusraDimaag
 from hashlib import sha512
 import time, uuid
 from io import BytesIO
+from flask_caching import Cache
 #<<<-----DatabaseConfiguration---------->>>
 with open("config.json", 'r') as config_file:
     jsonContent = json.load(config_file)
@@ -91,7 +92,7 @@ db.disconnect()
 #<<<-----APP-------->>>
 app = Flask(__name__)
 CORS(app)
-
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 #<<<-----Routes------------->>>
 @app.route('/', methods=['GET'])
 def index():
@@ -328,6 +329,7 @@ def submitbankdata(): # in this also i have to authenticate using session token 
 def getloginpage():
     return render_template('login.html')
 @app.route('/getprofilepicture', methods=['GET'])
+@cache.cached(timeout=3000, query_string=True)
 def getprofilepicture():
     try:
         registrationId = request.args.get('id')
@@ -343,6 +345,99 @@ def getprofilepicture():
                         db.disconnect()
                         if UD:
                             return send_file(BytesIO(UD[9]), mimetype='image/jpeg')
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 404
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/getaadharimage', methods=['GET'])
+@cache.cached(timeout=3000, query_string=True)
+def getaadharimage():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(registration_table, 'id', registrationId)[0]
+                        db.disconnect()
+                        if UD:
+                            return send_file(BytesIO(UD[10]), mimetype='image/jpeg')
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 404
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/getpanimage', methods=['GET'])
+@cache.cached(timeout=3000, query_string=True)
+def getpanimage():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(registration_table, 'id', registrationId)[0]
+                        db.disconnect()
+                        if UD:
+                            return send_file(BytesIO(UD[11]), mimetype='image/jpeg')
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 404
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/getpassbookimage', methods=['GET'])
+@cache.cached(timeout=3000, query_string=True)
+def getpassbookimage():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    print("pass")
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(banckDetailsTable, 'idinregtable', registrationId)[0]
+                        print("pass2")
+                        db.disconnect()
+                        if UD:
+                            return send_file(BytesIO(UD[6]), mimetype='image/jpeg')
                         else:
                             return jsonify({"status": "failure", "message": "User not found."}), 404
                     else:
@@ -382,4 +477,5 @@ def login():
 print(f"Running server on: http://127.0.0.1:8080")
 print("OK")
 # serve(app=app, host='127.0.0.1', port=5000)
-app.run(port=8080)
+# app.run(port=8080)
+app.run(host='127.0.0.1', port=8080)

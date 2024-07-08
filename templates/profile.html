@@ -72,13 +72,14 @@
       localStorage.setItem("updated", false);
 
     }
-    function getUpdates() {
+    async function getUpdates() {
       let userPhoto = document.getElementById("userPhotoShow");
       let fullname = document.getElementById("fullname");
       let aadharImage = document.getElementById("aadharimage");
       let panImage = document.getElementById("panimage");
       let passBookImage = document.getElementById("passbookimage");
-      fetch('/getprofilepicture?id='+localStorage.getItem("idofregestration")+'&session_token='+sessionStorage.getItem('sessionToken'), {
+      // get request for profile photo
+      await fetch('/getprofilepicture?id='+localStorage.getItem("idofregestration")+'&session_token='+sessionStorage.getItem('sessionToken'), {
         method: 'GET'
       })
       .then(response => {
@@ -94,6 +95,58 @@
       .catch(error => {
         console.error('There has been a problem with your fetch operation:', error);
       });
+      //get request for aadhar image
+      await fetch('/getaadharimage?id='+localStorage.getItem("idofregestration")+'&session_token='+sessionStorage.getItem('sessionToken'), {
+        method: 'GET'
+      })
+      .then(response => {
+        if(!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const urlOfAadharImage = URL.createObjectURL(blob);
+        aadharImage.src = urlOfAadharImage;
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+      //get request for pan image
+      await fetch('/getpanimage?id='+localStorage.getItem("idofregestration")+'&session_token='+sessionStorage.getItem('sessionToken'), {
+        method: 'GET'
+      })
+      .then(response => {
+        if(!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const urlOfPanImage = URL.createObjectURL(blob);
+        panImage.src = urlOfPanImage;
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+      //get request for passbook image
+      await fetch('/getpassbookimage?id='+localStorage.getItem("idofregestration")+'&session_token='+sessionStorage.getItem('sessionToken'), {
+        method: 'GET'
+      })
+      .then(response => {
+        if(!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const urlOfPassImage = URL.createObjectURL(blob);
+        passBookImage.src = urlOfPassImage;
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+      localStorage.setItem("updated", true);
     }
   </script>
 </body>
