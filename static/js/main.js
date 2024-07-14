@@ -6,11 +6,13 @@
 // });
 // var regForm = document.getElementById('registrationform');
 function updateScreenSize() {
-    const width = window.innerWidth;
-    const emailDiv = document.getElementById('email');
-    const newWidth = width - 550;
-    const minWidth = 250;
-    emailDiv.style.width = (newWidth > minWidth ? newWidth : minWidth) + 'px';
+    if (document.title == 'Registeration page') {
+        const width = window.innerWidth;
+        const emailDiv = document.getElementById('email');
+        const newWidth = width - 550;
+        const minWidth = 250;
+        emailDiv.style.width = (newWidth > minWidth ? newWidth : minWidth) + 'px';
+    }
 }
 updateScreenSize();
 document.getElementById('submitbutton').disabled = true;
@@ -159,21 +161,13 @@ document.getElementById('submitbutton').addEventListener('click', function(event
       .then(response => response.json())
       .then(data => {
           if (data.status === "success") {
-            alert(data.id, data.session_token)                               //to be removed after completion of the the website
-            localStorage.setItem('idofgegestration', data.id);
+            localStorage.setItem('idofregestration', data.id);
             sessionStorage.setItem('sessionToken', data.session_token);
             // window.location.href = '/bankDetails'
             const bankAuthForm = new FormData();
             bankAuthForm.append('session_token', data.session_token);
             if(data.id != "" && data.id != null && data.id != undefined) {
-                fetch('/bankDetails?session_token='+data.session_token, {
-                    method: 'GET'
-                })
-                .then(response => response.text())
-                .then(html => {
-                    document.body.innerHTML = html;
-                })
-                .catch(error => console.error('Error:', error));
+                window.location.href = '/bankDetails';
             }
           } else {
               console.error('Server responded with an error:', data);

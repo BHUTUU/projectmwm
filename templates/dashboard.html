@@ -11,7 +11,7 @@
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
-<body onload="setupdatevariableToFalse()">
+<body onload="setupdatevariableToFalse();getUpdates()">
   <div class="main">
     <div class="main-left">
       <div class="slidbar">
@@ -20,7 +20,7 @@
         <i class="fa-solid fa-dollar-sign"></i>
         <i class="fa-solid fa-envelope"></i>
         <i class="fa-solid fa-bolt"></i>
-        <i class="fa-solid fa-right-from-bracket" onclick="window.location.href = '/getloginpage'"></i>
+        <i class="fa-solid fa-right-from-bracket"onclick="sessionStorage.clear();history.replaceState(null, null, location.href);window.location.href = '/'"></i>
       </div>
     </div>
     <div class="main-right">
@@ -35,29 +35,29 @@
         </div>
         <div class="nav-right">
           <div class="nav-right-elem">
-            <p id="user_name">Khushdil Kumar</p>
-            <button type="button" onclick="window.location.href = '/getloginpage'">Log-out</button>
+            <p id="user_name">Loding...</p>
+            <button type="button" onclick="sessionStorage.clear();history.replaceState(null, null, location.href);window.location.href = '/'">Log-out</button>
           </div>
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s"
-            alt="">
+            alt="" id="userimage">
         </div>
       </nav>
       <div class="user-details" id="conter">
         <div class="user-amt" style="background-color: #54BE73;">
           <label for="">Your Amount Value</label>
-          <i class="fa-solid fa-indian-rupee-sign"> 50,000</i>
+          <i class="fa-solid fa-indian-rupee-sign" id="amountvalue"></i>
         </div>
         <div class="user-amt">
           <label for="">Your Interest Value <span>(Monthly)</span></label>
-          <i class="fa-solid fa-indian-rupee-sign"> 5000m</i>
+          <i class="fa-solid fa-indian-rupee-sign" id="monthlyprofit"></i>
         </div>
         <div class="user-amt">
           <label for="">Your Withdraw Amount <span>(Weakly)</span></label>
-          <i class="fa-solid fa-indian-rupee-sign"> 2500w</i>
+          <i class="fa-solid fa-indian-rupee-sign" id="weeklyprofit"></i>
         </div>
         <div class="user-amt" style="background-color: #54BE73;">
           <label for="">Pending Amount</label>
-          <i class="fa-solid fa-indian-rupee-sign"> 2000</i>
+          <i class="fa-solid fa-indian-rupee-sign" id="pendingamount"></i>
         </div>
       </div>
     </div>
@@ -65,11 +65,66 @@
 
 
   <script>
-    function setupdatevariableToFalse() {
-      localStorage.setItem("updated", false);
+    setInterval(()=> {
+      if(sessionStorage.getItem("sessionToken") == null || sessionStorage.getItem("sessionToken") == "" || sessionStorage.getItem("sessionToken") == undefined) {
+        alert("Session expired")
+        window.location.href = '/';
+      }
+    },100)
+    function calculateTotalInterestMonthly(principal, months, monthlyInterestRate) {
+      const totalAmount = principal * Math.pow(1 + (monthlyInterestRate / 12), 12*months);
+      const totalInterest = totalAmount - principal;
+      return totalInterest;
     }
-    function getUpdates() {
-
+    function calculateTotalInterestWeekly(principal, months, monthlyInterestRate) {
+      const totalAmount = principal * Math.pow(1 + (monthlyInterestRate / 52), 52*months);
+      const totalInterest = totalAmount - principal;
+      return totalInterest;
+    }
+    function setupdatevariableToFalse() {
+      sessionStorage.setItem("uif", false); //uif is userimagefetched - set to false at start of this page
+      sessionStorage.setItem("ufn", false); //ufp is userfullname - set to false at start of this page
+    }
+    async function getUpdates() {
+      let userPhotoObj = document.getElementById("userimage");
+      let fullnameObj = document.getElementById("user_name");
+      let amountValue = document.getElementById("amountvalue");
+      let monthlyProfit = document.getElementById("monthlyprofit");
+      let weeklyprofit = document.getElementById("weeklyprofit");
+      await fetch("/getprofilepicture?id="+localStorage.getItem("idofregestration")+"&session_token="+sessionStorage.getItem("sessionToken"),{
+        method: 'GET'
+      })
+      .then(response => response.blob())
+      .then(blob => {
+        const urlOfUserImage = URL.createObjectURL(blob);
+        userPhotoObj.src = urlOfUserImage;
+        sessionStorage.setItem("uif", true); //set to true after fetching profile photo
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+      await fetch("/getfullname?id="+localStorage.getItem("idofregestration")+"&session_token="+sessionStorage.getItem("sessionToken"),{
+        method: 'GET'
+      })
+      .then(response => response.json())
+      .then(data => {
+        fullnameObj.innerText = data.full_name;
+        sessionStorage.setItem("ufn", true); //set to true after fetching fullname
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+      await fetch("/getamountdata?id="+localStorage.getItem("idofregestration")+"&session_token="+sessionStorage.getItem("sessionToken"),{
+        method: 'GET'
+      })
+      .then(response => response.json())
+      .then(data => {
+        amountValue.innerText = data.amount;
+        monthlyProfit.innerText = calculateTotalInterestMonthly(Number(data.amount), Number(data.months), Number(data.monthly_profit_percent))
+        weeklyprofit.innerText = calculateTotalInterestWeekly(Number(data.amount), Number(data.weeks), Number(data.weekly_profit_percent))
+        pendingamount.innerText = (Number(data.amount)*2.5)/100
+        sessionStorage.setItem("uif", true); //set to true after fetching amount data
+      })
     }
   </script>
 </body>

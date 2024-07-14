@@ -62,21 +62,20 @@
     <img src="{{url_for('static', filename='images/logo.png')}}" alt="">
     <div class="nav-conter">
       <ul>
-        <li><a href="">Home</a></li>
+        <li><a href="/">Home</a></li>
         <li><a href="">About</a></li>
         <li><a href="">Services</a></li>
         <li><a href="">Get in Touch</a></li>
-        <li><a href="login.html">Login</a></li>
-        <li><a href="Register.html">Create Account</a></li>
+        <li><a href="/getloginpage">Login</a></li>
+        <li><a href="/registerpage">Create Account</a></li>
       </ul>
     </div>
   </nav>
   <div class="pop-payment">
     <div class="pop-payment-elem">
       <div class="innerPop">
-        <span style="font-weight: 550;">Your Amount :</span><i class="fa-solid fa-indian-rupee-sign" id="amt">
-          </i>
-        <img src="{{url_for('static', filename='images/phonepayqr.jpg')}}" onclick="window.location.href='upi://pay?pa=7667648479@ibl&pn=Khushdil%20Kumar&mc=0000&mode=02&purpose=00'">
+        <span style="font-weight: 550;">Your Amount :</span><i class="fa-solid fa-indian-rupee-sign" id="amt"></i>
+        <img src="{{url_for('static', filename='images/phonepayqr.jpg')}}" onclick="window.location.href='upi://pay?pa=7667648479@ibl&pn=Khushdil%20Kumar&mc=0000&mode=02&purpose=00'" style="height: 200px;width: 200px;;">
         <p class="okBtn">Ok</p>
       </div>
     </div>
@@ -106,7 +105,7 @@
             <option value="Yearly">Yearly</option>
           </select>
         </div>
-        <button type="button" onclick="window.location.href = 'Register.html';" id="backbtn">BACK</button>
+        <button type="button" onclick="window.location.href = '/registerpage';" id="backbtn">BACK</button>
         <button type="button" class="btn">Make Payment</button>
       </form>
     </div>
@@ -154,13 +153,14 @@
 
       const bankdetail = bankstatementImage.files[0];
       const formData = new FormData();
-      const registrationId = localStorage.getItem('idofgegestration');
+      const registrationId = localStorage.getItem('idofregestration');
       formData.append('bankdetailimage', bankdetail);
       formData.append('accountnumber', accountnumber);
       formData.append('ifc', ifc);
       formData.append('amount', amtInput);
       formData.append('payout', payoutselector);
       formData.append('registrationId', registrationId);
+      formData.append('session_token', sessionStorage.getItem('sessionToken'));
 
       fetch('/submitbankdetails', {
         method: 'POST',

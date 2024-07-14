@@ -15,12 +15,12 @@
   <div class="main" style="height: fit-content;">
     <div class="main-left">
       <div class="slidbar">
-        <i class="fa-solid fa-house active" onclick="window.location.href = '/getDashboard'"></i>
+        <i class="fa-solid fa-house active" onclick=";window.location.href = '/getDashboard'"></i>
         <i class="fa-solid fa-user" onclick="window.location.href ='/getProfilePage'"></i>
         <i class="fa-solid fa-dollar-sign"></i>
         <i class="fa-solid fa-envelope"></i>
         <i class="fa-solid fa-bolt"></i>
-        <i class="fa-solid fa-right-from-bracket" onclick="window.location.href = '/getloginpage'"></i>
+        <i class="fa-solid fa-right-from-bracket" onclick="sessionStorage.clear();window.location.href = '/getloginpage'"></i>
       </div>
     </div>
     <div class="main-right">
@@ -35,11 +35,11 @@
         </div>
         <div class="nav-right">
           <div class="nav-right-elem">
-            <p style="font-size: 1.4vw; font-weight: 550;"><span>Name :</span> Khushdil Kumar</p>
-            <button type="button">Log-out</button>
+            <p style="font-size: 1.4vw; font-weight: 550;" id="fullname1"><span>Name :&nbsp;</span>Loading</p>
+            <button type="button" onclick="sessionStorage.clear(); window.location.href='/';">Log-out</button>
           </div>
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s"
-            alt="">
+            alt="" id="userimage1">
         </div>
       </nav>
       <div class="user-profile-details">
@@ -68,13 +68,21 @@
     </div>
   </div>
   <script>
+    setInterval(()=> {
+      if(sessionStorage.getItem("sessionToken") == null || sessionStorage.getItem("sessionToken") == "" || sessionStorage.getItem("sessionToken") == undefined) {
+        alert("Session expired")
+        window.location.href = '/';
+      }
+    },100)
     function setupdatevariableToFalse() {
       localStorage.setItem("updated", false);
 
     }
     async function getUpdates() {
       let userPhoto = document.getElementById("userPhotoShow");
+      let userimage1 = document.getElementById("userimage1");
       let fullname = document.getElementById("fullname");
+      let fullname1 = document.getElementById("fullname1");
       let aadharImage = document.getElementById("aadharimage");
       let panImage = document.getElementById("panimage");
       let passBookImage = document.getElementById("passbookimage");
@@ -91,6 +99,7 @@
       .then(blob => {
         const urlOfProfileImage = URL.createObjectURL(blob);
         userPhoto.src = urlOfProfileImage;
+        userimage1.src = urlOfProfileImage;
       })
       .catch(error => {
         console.error('There has been a problem with your fetch operation:', error);
@@ -142,6 +151,17 @@
       .then(blob => {
         const urlOfPassImage = URL.createObjectURL(blob);
         passBookImage.src = urlOfPassImage;
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+      await fetch("/getfullname?id="+localStorage.getItem("idofregestration")+"&session_token="+sessionStorage.getItem("sessionToken"),{
+        method: 'GET'
+      })
+      .then(response => response.json())
+      .then(data => {
+        fullname.innerText = "Name : "+data.full_name;
+        fullname1.innerText = "Name : "+data.full_name;
       })
       .catch(error => {
         console.error('There has been a problem with your fetch operation:', error);

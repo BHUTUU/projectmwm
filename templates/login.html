@@ -29,7 +29,7 @@
         <li><a href="home.html">About</a></li>
         <li><a href="home.html">Services</a></li>
         <li><a href="home.html">Get in Touch</a></li>
-        <li><a href="/getloginpage" style="background-color: blue; color: white;">Login</a></li>
+        <li><a href="/getloginpage" style="background-color: blue; color: white; padding: 3px 5px; border-radius: 5px;">Login</a></li>
         <li><a href="/registerpage">Create Account</a></li>
 
       </ul>
@@ -93,19 +93,14 @@
       .then(response => response.json())
       .then(data => {
           if (data.status === "success") {
+            localStorage.clear();
               localStorage.setItem('idofregestration', data.id);
               sessionStorage.setItem('sessionToken', data.session_token)
-              // alert(data.session_token)
-              window.location.href = '/getDashboard'
-
-              // fetch('/getDashboardDetails?id='+data.id+'&session_token='+data.session_token, {
-              //   method: 'GET',
-              // })
-              // .then(response => response.text())
-              //   .then(html => {
-              //       document.body.innerHTML = html;
-              //   })
-              //   .catch(error => console.error('Error:', error));
+              if(data.ifbankdetailexists == "False") {
+                window.location.href = '/bankDetails';
+              } else {
+                window.location.href = '/getDashboard';
+              }
           } else {
               console.error('Server responded with an error:', data);
               alert("Failed to login: " + data.message);
