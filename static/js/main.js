@@ -6,11 +6,13 @@
 // });
 // var regForm = document.getElementById('registrationform');
 function updateScreenSize() {
-    const width = window.innerWidth;
-    const emailDiv = document.getElementById('email');
-    const newWidth = width - 550;
-    const minWidth = 250;
-    emailDiv.style.width = (newWidth > minWidth ? newWidth : minWidth) + 'px';
+    if (document.title == 'Registeration page') {
+        const width = window.innerWidth;
+        const emailDiv = document.getElementById('email');
+        const newWidth = width - 550;
+        const minWidth = 250;
+        emailDiv.style.width = (newWidth > minWidth ? newWidth : minWidth) + 'px';
+    }
 }
 updateScreenSize();
 document.getElementById('submitbutton').disabled = true;
@@ -120,7 +122,7 @@ document.getElementById('resendOtpBtn').addEventListener('click', function () {
         alert("An error occurred while sending OTP");
     });
 });
-document.getElementById('registrationform').addEventListener('submit', function(event) {
+document.getElementById('submitbutton').addEventListener('click', function(event) {
   event.preventDefault();
   try {
       var userPhoto = document.getElementById('userPhoto');
@@ -159,9 +161,14 @@ document.getElementById('registrationform').addEventListener('submit', function(
       .then(response => response.json())
       .then(data => {
           if (data.status === "success") {
-            alert(data.id)
-            localStorage.setItem('idofgegestration', data.id);
-            window.location.href = '/bankDetails'
+            localStorage.setItem('idofregestration', data.id);
+            sessionStorage.setItem('sessionToken', data.session_token);
+            // window.location.href = '/bankDetails'
+            const bankAuthForm = new FormData();
+            bankAuthForm.append('session_token', data.session_token);
+            if(data.id != "" && data.id != null && data.id != undefined) {
+                window.location.href = '/bankDetails';
+            }
           } else {
               console.error('Server responded with an error:', data);
               alert("Failed to submit data: " + data.message);
@@ -176,3 +183,32 @@ document.getElementById('registrationform').addEventListener('submit', function(
       alert("An error occurred on the client side.");
   }
 });
+
+// Login handler
+// document.getElementById('loginbutton').addEventListener('click', function(event) {
+//     // event.preventDefault();
+//     alert("testing")
+//     var email = document.getElementById('emailvalue').value;
+//     var password = document.getElementById('passwordvalue').value;
+//     console.log(email, password);
+//     var formData = new FormData();
+//     formData.append('email', email);
+//     formData.append('password',  password);
+//     fetch('/login', {
+//         method: 'POST',
+//         body: formData
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.status === "success") {
+//             localStorage.setItem('idofregestration', data.id);
+//             window.location.href = '/bankDetails';
+//         } else {
+//             console.error('Server responded with an error:', data);
+//             alert("Failed to login: " + data.message);
+//         }
+//     }).catch(error => {
+//         console.error('Fetch error:', error);
+//         alert("An error occurred while logging in.");
+//     });
+// });

@@ -1,13 +1,19 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, send_file
 from flask_cors import CORS
 from waitress import serve
 import os,json
+from datetime import datetime, date
+from dateutil import relativedelta as rd
 from modules.DatabaseManager import DatabaseManager
 from modules.EmailManager import EmailManager
 from threading import Thread as dusraDimaag
 from hashlib import sha512
-import time
+import time, uuid
+from io import BytesIO
+# from flask_caching import Cache
 #<<<-----DatabaseConfiguration---------->>>
+WEEKLY_PROFIT_PERCENT = 1.25
+MONTHLY_PROFIT_PERCENT = 5
 with open("config.json", 'r') as config_file:
     jsonContent = json.load(config_file)
     config_file.close()
@@ -35,7 +41,7 @@ columnsInReg = [
     'aadharimagefile LONGBLOB',
     'panimagefile LONGBLOB'
 ]
-banckDetailsTable = 'bank_details_table'
+bankDetailsTable = 'bank_details_table'
 columnsInBank = [
 'id INT AUTO_INCREMENT PRIMARY KEY',
 'idinregtable INT',
@@ -43,13 +49,21 @@ columnsInBank = [
 'ifc VARCHAR(30)',
 'amount VARCHAR(255)',
 'payout VARCHAR(20)',
-'bankdetailimage LONGBLOB'
+'bankdetailimage LONGBLOB',
+'dateofinvestment VARCHAR(20)',
 ]
 emailOTPtable = 'temp_otp_email'
 columnsInEmailOTPtable = [
     'id INT AUTO_INCREMENT PRIMARY KEY',
     'email VARCHAR(255)',
     'otp VARCHAR(255)',
+]
+sessionDataTable = 'session_data_table'
+columnsInSessionDataTable = [
+    'id INT AUTO_INCREMENT PRIMARY KEY',
+    'idinregtable INT',
+    'email VARCHAR(255)',
+    'token VARCHAR(255)'
 ]
 # Create the table if it doesn't exist
 db.connect()
@@ -59,22 +73,31 @@ if not db.check_table_exists(registration_table):
 else:
     print(f"Table '{registration_table}' already exists.")
 
-if not db.check_table_exists(banckDetailsTable):
-    db.create_table(banckDetailsTable, columnsInBank)
-    print(f"Table '{banckDetailsTable}' created successfully.")
+if not db.check_table_exists(bankDetailsTable):
+    db.create_table(bankDetailsTable, columnsInBank)
+    print(f"Table '{bankDetailsTable}' created successfully.")
 else:
-    print(f"Table '{banckDetailsTable}' already exists.")
+    print(f"Table '{bankDetailsTable}' already exists.")
 
 if not db.check_table_exists(emailOTPtable):
     db.create_table(emailOTPtable, columnsInEmailOTPtable)
     print(f"Table '{emailOTPtable}' created successfully.")
 else:
     print(f"Table '{emailOTPtable}' already exists.")
+
+if not db.check_table_exists(sessionDataTable):
+    db.create_table(sessionDataTable, columnsInSessionDataTable)
+    print(f"Table '{sessionDataTable}' created successfully.")
+else:
+    db.delete_table(sessionDataTable)
+    db.create_table(sessionDataTable, columnsInSessionDataTable)
+    print(f"Table '{sessionDataTable}' created successfully.")
+
 db.disconnect()
 #<<<-----APP-------->>>
 app = Flask(__name__)
 CORS(app)
-
+# cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 #<<<-----Routes------------->>>
 @app.route('/', methods=['GET'])
 def index():
@@ -86,6 +109,22 @@ def registerPage():
 
 @app.route('/bankDetails', methods=['GET'])
 def bankDetails():
+    # try:
+    #     sessionToken = request.args.get('session_token')
+    #     print("get sessinfo from client: " + sessionToken)
+    # except Exception:
+    #     return jsonify({"status": "failure", "message": "Invalid Session request of session Expired!."}), 500
+    # db.connect()
+    # try:
+    #     sessionData = db.get_value_row('session_data_table', 'token', sessionToken)[0][3]
+    #     print("\n\n\n\n ", sessionData)
+    # except Exception:
+    #     sessionData = None
+    # db.disconnect()
+    # if sessionData is not None:
+    #     return render_template('bank.html')
+    # else:
+    #     return jsonify({"status": "failure", "message": "Invalid Session request of session Expired!."}), 500
     return render_template('bank.html')
 
 @app.route('/finishPage', methods=['GET'])
@@ -193,20 +232,79 @@ def submitregistereddata():
             aadharimage_data, panimage_data
         )
         db.connect()
+        try:
+            predata = db.get_value_row(registration_table, 'email', email)[0]
+            idOfRegistration = db.get_value_row(registration_table, 'email', email)
+        except Exception:
+            predata = None
+        if predata is not None:
+            db.disconnect()
+            return jsonify({"status": "failure", "message": "User already Registered!"}), 500
         if db.add_data(registration_table, column_names, values):
             idOfRegistration = db.get_value_row(registration_table, 'aadharnumber', aadharnumber)[0]
             db.disconnect()
             print(idOfRegistration[0])
-            return jsonify({"status": "success", "id": f"{idOfRegistration[0]}", "message": "Data inserted successfully."}), 201
+            sessionToken = str(uuid.uuid4().hex)
+            session_column = [
+                'idinregtable', 'email', 'token'
+            ]
+            session_values = (
+                idOfRegistration[0], email, sessionToken
+            )
+            db.connect()
+            if db.add_data(sessionDataTable, session_column, session_values):
+                print("\n\n\n\nSession token added")
+                db.disconnect()
+                return jsonify({"status": "success", "id": f"{idOfRegistration[0]}", "session_token": f"{sessionToken}", "message": "Data inserted successfully."}), 201
+            else:
+                print("\n\n\nSession token add error")
+                db.disconnect()
+                return jsonify({"status": "ServerError", "message": "Registration successfull but session expired!"}), 500
         else:
             db.disconnect()
             return jsonify({"status": "failure", "message": "Failed to insert data."}), 500
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
+@app.route("/getDashboard", methods=["GET"])
+def getDashboard():
+    return render_template("dashboard.html")
+@app.route("/getProfilePage", methods=["GET"])
+def getProfilePage():
+    return render_template("profile.html")
+@app.route('/getDashboardDetails', methods=['GET'])
+def getDashboardDetails():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(registration_table, 'id', registrationId)[0]
+                        db.disconnect()
+                        if UD:
+                            return jsonify({"status": "success", "id": f"{UD[0]}", "full_name": f"{UD[1]}", "email": f"{UD[2]}", "mobile": f"{UD[4]}", "alternate_mobile": f"{UD[5]}", "aadhar_number": f"{UD[6]}", "date_of_birth": f"{UD[7]}", "pan_number": f"{UD[8]}"})
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 419
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+        else:
+            return jsonify({"status": "failure", "message": "Missing required parameters."}), 400
+    except Exception as e:
+        # print("Exception raised")
+        return jsonify({"status": "error", "message": str(e)}), 500
 @app.route('/submitbankdetails', methods=['POST'])
-def submitbankdata():
+def submitbankdata(): # in this also i have to authenticate using session token later.
     try:
         registrationId = request.form.get('registrationId')
         payout = request.form.get('payout')
@@ -214,32 +312,271 @@ def submitbankdata():
         amount = request.form.get('amount')
         accountnumber = request.form.get('accountnumber')
         bankdetailimage = request.files.get('bankdetailimage')
-        bankdetail_data = bankdetailimage.read() if bankdetailimage else None
-        column_names = [
-            'idinregtable', 'accountnumber', 'ifc', 'amount', 'payout', 'bankdetailimage'
-        ]
-        values = (
-            registrationId, accountnumber, ifc, amount, payout, bankdetail_data
-        )
+        sessionToken = request.form.get('session_token')
         db.connect()
-        if db.add_data(banckDetailsTable, column_names, values):
-            db.disconnect()
-            print("successful")
-            return jsonify({"status": "success", "message": "Data inserted successfully."}), 201
-        else:
-            db.disconnect()
-            print("Oh no something went wrong")
-            return jsonify({"status": "failure", "message": "Failed to insert data."}), 500
+        try:
+            sessionData = db.get_value_row('session_data_table', 'token', sessionToken)[0][3]
+            print("\n\n\n\n ", sessionData)
+        except Exception:
+            sessionData = None
+        db.disconnect()
+        if sessionData is not None:
+            bankdetail_data = bankdetailimage.read() if bankdetailimage else None
+            todaysDate = datetime.today().strftime('%Y-%m-%d')
+            column_names = [
+                'idinregtable', 'accountnumber', 'ifc', 'amount', 'payout', 'bankdetailimage', 'dateofinvestment'
+            ]
+            values = (
+                registrationId, accountnumber, ifc, amount, payout, bankdetail_data, todaysDate
+            )
+            db.connect()
+            if db.add_data(bankDetailsTable, column_names, values):
+                db.disconnect()
+                print("successful")
+                return jsonify({"status": "success", "message": "Data inserted successfully."}), 201
+            else:
+                db.disconnect()
+                print("Oh no something went wrong")
+                return jsonify({"status": "failure", "message": "Failed to insert data."}), 500
     except Exception as e:
         print("Exception raised")
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
 @app.route('/getloginpage', methods=['GET'])
 def getloginpage():
     return render_template('login.html')
+@app.route('/getfullname', methods=['GET'])
+def getfullname():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(registration_table, 'id', registrationId)[0]
+                        db.disconnect()
+                        if UD:
+                            return jsonify({"status": "success", "full_name": f"{UD[1]}"})
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."})
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/getamountdata', methods=['GET'])
+def getamountndate():
+    global WEEKLY_PROFIT_PERCENT, MONTHLY_PROFIT_PERCENT
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(bankDetailsTable, 'idinregtable', registrationId)[0]
+                        db.disconnect()
+                        if UD:
+                            date_invested = UD[7]
+                            date_today = datetime.today().strftime("%Y-%m-%d")
+                            d1=datetime.strptime(date_invested, "%Y-%m-%d")
+                            d2=datetime.strptime(date_today, "%Y-%m-%d")
+                            difference = rd.relativedelta(d2, d1)
+                            print('working')
+                            months_difference = difference.years * 12 + difference.months
+                            days_difference = (d2 - d1).days
+                            weeks_difference = days_difference // 7
+                            return jsonify({"status": "success", "amount": f"{UD[4]}", "months": f"{months_difference}", "weeks": f"{weeks_difference}", "weekly_profit_percent": f"{WEEKLY_PROFIT_PERCENT}", "monthly_profit_percent": f"{MONTHLY_PROFIT_PERCENT}"})
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 404
+                except Exception as e:
+                    db.disconnect()
+                    print(e)
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/getprofilepicture', methods=['GET'])
+# @cache.cached(timeout=3000, query_string=True)
+def getprofilepicture():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(registration_table, 'id', registrationId)[0]
+                        db.disconnect()
+                        if UD:
+                            return send_file(BytesIO(UD[9]), mimetype='image/jpeg')
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 404
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/getaadharimage', methods=['GET'])
+# @cache.cached(timeout=3000, query_string=True)
+def getaadharimage():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(registration_table, 'id', registrationId)[0]
+                        db.disconnect()
+                        if UD:
+                            return send_file(BytesIO(UD[10]), mimetype='image/jpeg')
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 404
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/getpanimage', methods=['GET'])
+# @cache.cached(timeout=3000, query_string=True)
+def getpanimage():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(registration_table, 'id', registrationId)[0]
+                        db.disconnect()
+                        if UD:
+                            return send_file(BytesIO(UD[11]), mimetype='image/jpeg')
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 404
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/getpassbookimage', methods=['GET'])
+# @cache.cached(timeout=3000, query_string=True)
+def getpassbookimage():
+    try:
+        registrationId = request.args.get('id')
+        sessionToken = request.args.get('session_token')
+        if registrationId and sessionToken:
+            db.connect()
+            sessionData = db.get_value_row(sessionDataTable, 'idinregtable', registrationId)
+            if sessionData:
+                try:
+                    sessionTokenInDB = sessionData[0][3]
+                    print("pass")
+                    if sessionTokenInDB == sessionToken:
+                        UD = db.get_value_row(bankDetailsTable, 'idinregtable', registrationId)[0]
+                        print("pass2")
+                        db.disconnect()
+                        if UD:
+                            return send_file(BytesIO(UD[6]), mimetype='image/jpeg')
+                        else:
+                            return jsonify({"status": "failure", "message": "User not found."}), 404
+                    else:
+                        db.disconnect()
+                        return jsonify({"status": "failure", "message": "Session expired."}), 404
+                except Exception:
+                    db.disconnect()
+                    return jsonify({"status": "failure", "message": "An error occurred while fetching user data."}), 500
+            else:
+                db.disconnect()
+                return jsonify({"status": "failure", "message": "Session not found."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        email = request.form.get('email')
+        password = request.form.get('password')
+        db.connect()
+        if db.get_value_row(registration_table, 'email', email)[0][3] == password:
+            idOfRegistration = db.get_value_row(registration_table, 'email', email)[0][0]
+            try:
+                print("trying")
+                if db.get_value_row(bankDetailsTable, 'idinregtable', int(idOfRegistration))[0]:
+                    bankdatastatus = True
+            except Exception:
+                bankdatastatus = False
+            print(bankdatastatus)
+            sessionToken = str(uuid.uuid4().hex)
+            try:
+                oldSession = db.get_value_row(sessionDataTable, 'email', email)[0]
+                if oldSession is not None:
+                    old_session=True
+            except Exception:
+                old_session = False
+            session_column = [
+                'idinregtable', 'email', 'token'
+            ]
+            session_values = (
+                idOfRegistration, email, sessionToken
+            )
+            if old_session:
+                db.alter_value(sessionDataTable, 'token', sessionToken,int(oldSession[0]))
+                print(idOfRegistration, sessionToken)
+                return jsonify({"status": "success", "id": f"{idOfRegistration}", "session_token": f"{sessionToken}", "ifbankdetailexists": f"{bankdatastatus}"}), 201
+            if db.add_data(sessionDataTable, session_column, session_values):
+                db.disconnect()
+                print(idOfRegistration, sessionToken)
+                return jsonify({"status": "success", "id": f"{idOfRegistration}", "session_token": f"{sessionToken}", "ifbankdetailexists": f"{bankdatastatus}"}), 201
+        else:
+            db.disconnect()
+            return jsonify({"status": "failure"}), 500
+    except Exception:
+        return jsonify({"status": "error"}), 500
 print(f"Running server on: http://127.0.0.1:8080")
 print("OK")
 # serve(app=app, host='127.0.0.1', port=5000)
-app.run(port=8080)
+# app.run(port=8080)
+app.run(host='127.0.0.1', port=8080)

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | MoneyWealthMangment.pvt.in</title>
+  <link rel="stylesheet" href="{{url_for('static', filename='css/dashboard.css')}}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body onload="setupdatevariableToFalse();getUpdates()">
+  <div class="main">
+    <div class="main-left">
+      <div class="slidbar">
+        <i class="fa-solid fa-house active" onclick="window.location.href = 'dashboard.html'"></i>
+        <i class="fa-solid fa-user" onclick="window.location.href ='/getProfilePage'"></i>
+        <i class="fa-solid fa-dollar-sign"></i>
+        <i class="fa-solid fa-envelope"></i>
+        <i class="fa-solid fa-bolt"></i>
+        <i class="fa-solid fa-right-from-bracket"onclick="sessionStorage.clear();history.replaceState(null, null, location.href);window.location.href = '/'"></i>
+      </div>
+    </div>
+    <div class="main-right">
+      <nav>
+        <div class="nav-left"
+          style="display: flex; align-items: center; gap: 5px; border-bottom: 0.5px solid #54BE73; padding: 5px 10px; border-radius: 10px;">
+          <i class="fa-solid fa-users" style="font-size: 2vw;"></i>
+          <div class="elem">
+            <h1> User Dashboard</h1>
+            <p>Payment updates</p>
+          </div>
+        </div>
+        <div class="nav-right">
+          <div class="nav-right-elem">
+            <p id="user_name">Loding...</p>
+            <button type="button" onclick="sessionStorage.clear();history.replaceState(null, null, location.href);window.location.href = '/'">Log-out</button>
+          </div>
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s"
+            alt="" id="userimage">
+        </div>
+      </nav>
+      <div class="user-details" id="conter">
+        <div class="user-amt" style="background-color: #54BE73;">
+          <label for="">Your Amount Value</label>
+          <i class="fa-solid fa-indian-rupee-sign" id="amountvalue"></i>
+        </div>
+        <div class="user-amt">
+          <label for="">Your Interest Value <span>(Monthly)</span></label>
+          <i class="fa-solid fa-indian-rupee-sign" id="monthlyprofit"></i>
+        </div>
+        <div class="user-amt">
+          <label for="">Your Withdraw Amount <span>(Weakly)</span></label>
+          <i class="fa-solid fa-indian-rupee-sign" id="weeklyprofit"></i>
+        </div>
+        <div class="user-amt" style="background-color: #54BE73;">
+          <label for="">Pending Amount</label>
+          <i class="fa-solid fa-indian-rupee-sign" id="pendingamount"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    setInterval(()=> {
+      if(sessionStorage.getItem("sessionToken") == null || sessionStorage.getItem("sessionToken") == "" || sessionStorage.getItem("sessionToken") == undefined) {
+        alert("Session expired")
+        window.location.href = '/';
+      }
+    },100)
+    function calculateTotalInterestMonthly(principal, months, monthlyInterestRate) {
+      const totalAmount = principal * Math.pow(1 + (monthlyInterestRate / 12), 12*months);
+      const totalInterest = totalAmount - principal;
+      return totalInterest;
+    }
+    function calculateTotalInterestWeekly(principal, months, monthlyInterestRate) {
+      const totalAmount = principal * Math.pow(1 + (monthlyInterestRate / 52), 52*months);
+      const totalInterest = totalAmount - principal;
+      return totalInterest;
+    }
+    function setupdatevariableToFalse() {
+      sessionStorage.setItem("uif", false); //uif is userimagefetched - set to false at start of this page
+      sessionStorage.setItem("ufn", false); //ufp is userfullname - set to false at start of this page
+    }
+    async function getUpdates() {
+      let userPhotoObj = document.getElementById("userimage");
+      let fullnameObj = document.getElementById("user_name");
+      let amountValue = document.getElementById("amountvalue");
+      let monthlyProfit = document.getElementById("monthlyprofit");
+      let weeklyprofit = document.getElementById("weeklyprofit");
+      await fetch("/getprofilepicture?id="+localStorage.getItem("idofregestration")+"&session_token="+sessionStorage.getItem("sessionToken"),{
+        method: 'GET'
+      })
+      .then(response => response.blob())
+      .then(blob => {
+        const urlOfUserImage = URL.createObjectURL(blob);
+        userPhotoObj.src = urlOfUserImage;
+        sessionStorage.setItem("uif", true); //set to true after fetching profile photo
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+      await fetch("/getfullname?id="+localStorage.getItem("idofregestration")+"&session_token="+sessionStorage.getItem("sessionToken"),{
+        method: 'GET'
+      })
+      .then(response => response.json())
+      .then(data => {
+        fullnameObj.innerText = data.full_name;
+        sessionStorage.setItem("ufn", true); //set to true after fetching fullname
+      })
+      .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+      await fetch("/getamountdata?id="+localStorage.getItem("idofregestration")+"&session_token="+sessionStorage.getItem("sessionToken"),{
+        method: 'GET'
+      })
+      .then(response => response.json())
+      .then(data => {
+        amountValue.innerText = data.amount;
+        monthlyProfit.innerText = calculateTotalInterestMonthly(Number(data.amount), Number(data.months), Number(data.monthly_profit_percent))
+        weeklyprofit.innerText = calculateTotalInterestWeekly(Number(data.amount), Number(data.weeks), Number(data.weekly_profit_percent))
+        pendingamount.innerText = (Number(data.amount)*2.5)/100
+        sessionStorage.setItem("uif", true); //set to true after fetching amount data
+      })
+    }
+  </script>
+</body>
+
+</html>
